@@ -49,7 +49,9 @@ export default function NavBar() {
           </Link>
         </Flex>
         <Flex flex={1} justify="flex-end" gap="1rem">
-          <Button color="main">Login</Button>
+          <Link as={NavLink} to="/login" _hover={{ textDecoration: 'none' }}>
+            <Button color="main">Login</Button>
+          </Link>
           <Link as={NavLink} to="/signup" _hover={{ textDecoration: 'none' }}>
             <Button color="white" bgColor="main">
               Sign Up
