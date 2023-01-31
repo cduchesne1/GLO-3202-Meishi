@@ -17,4 +17,5 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_MEISHI_CA7A8 }}'
+          entryPoint: ./frontend/
           projectId: meishi-ca7a8
