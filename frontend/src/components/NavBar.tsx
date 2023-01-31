@@ -1,5 +1,7 @@
-import { Box, Button, Flex, Heading } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Link } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { NavLink } from 'react-router-dom';
 
 export default function NavBar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -42,13 +44,17 @@ export default function NavBar() {
         justify="space-between"
       >
         <Flex>
-          <Heading fontSize="1.75rem">meishi</Heading>
+          <Link as={NavLink} to="/" _hover={{ textDecoration: 'none' }}>
+            <Heading fontSize="1.75rem">meishi</Heading>
+          </Link>
         </Flex>
         <Flex flex={1} justify="flex-end" gap="1rem">
           <Button color="main">Login</Button>
-          <Button color="white" bgColor="main">
-            Sign Up
-          </Button>
+          <Link as={NavLink} to="/signup" _hover={{ textDecoration: 'none' }}>
+            <Button color="white" bgColor="main">
+              Sign Up
+            </Button>
+          </Link>
         </Flex>
       </Flex>
     </Box>

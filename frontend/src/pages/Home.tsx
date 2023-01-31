@@ -1,6 +1,6 @@
 import { Box, Heading, Image, Stack } from '@chakra-ui/react';
 import React from 'react';
-import NavBar from './components/NavBar';
+import NavBar from '../components/NavBar';
 
 function Home() {
   return (
