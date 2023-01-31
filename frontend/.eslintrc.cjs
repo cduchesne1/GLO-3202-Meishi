@@ -9,27 +9,29 @@ module.exports = {
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
-    'airbnb-base',
-    'airbnb-typescript/base'
+    'airbnb',
+    'airbnb/hooks',
+    'airbnb-typescript'
   ],
   root: true,
   env: {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.cjs'],
   rules: {
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
-    'import/prefer-default-export': 'off',
-    'class-methods-use-this': 'off',
-    'implicit-arrow-linebreak': 'off',
-    'object-curly-newline': 'off',
-    'max-classes-per-file': 'off',
-    'function-paren-newline': 'off',
-    'no-plusplus': 'off',
+    '@typescript-eslint/comma-dangle': 'off',
+    'react/jsx-props-no-spreading': 'off',
     'operator-linebreak': 'off',
+    'prettier/prettier': [
+      'error',
+      {
+        singleQuote: true,
+      }
+    ]
   },
 };
