@@ -10,8 +10,15 @@
     "lint": "eslint --ext .js,.jsx,.ts,.tsx --fix src/"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.4.9",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@fontsource/inter": "^4.5.15",
+    "@fontsource/outfit": "^4.5.11",
+    "framer-motion": "^8.5.5",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0"
   },
   "devDependencies": {
     "@types/react": "^18.0.26",

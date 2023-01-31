@@ -27,6 +27,7 @@ module.exports = {
     '@typescript-eslint/comma-dangle': 'off',
     'react/jsx-props-no-spreading': 'off',
     'operator-linebreak': 'off',
+    'object-curly-newline': 'off',
     'prettier/prettier': [
       'error',
       {
