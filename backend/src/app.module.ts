@@ -5,6 +5,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { EncryptionModule } from './encryption/encryption.module';
 
 @Module({
   imports: [
@@ -25,6 +28,9 @@ import { AppService } from './app.service';
         useUnifiedTopology: true,
       }),
     }),
+    AuthModule,
+    UsersModule,
+    EncryptionModule,
   ],
   controllers: [AppController],
   providers: [
