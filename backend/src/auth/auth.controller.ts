@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Post,
@@ -22,6 +23,18 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
+    if (createUserDto.username.length > 30) {
+      throw new BadRequestException(
+        'Username must be less than 30 characters.',
+      );
+    }
+
+    if (await this.usersService.isUsernameTaken(createUserDto.username)) {
+      throw new BadRequestException(
+        `Username ${createUserDto.username} is already taken.`,
+      );
+    }
+
     const user = await this.usersService.create(
       createUserDto.username,
       createUserDto.email,
