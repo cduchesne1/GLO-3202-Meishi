@@ -24,7 +24,7 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
-  @UsePipes(new ValidationPipe())
+  @UsePipes(ValidationPipe)
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
     if (createUserDto.username.length > 30) {
@@ -106,6 +106,7 @@ export class AuthController {
     };
   }
 
+  @UsePipes(ValidationPipe)
   @Post('token')
   async token(@Body() refreshTokenDto: RefreshTokenDto) {
     const { refreshToken } = refreshTokenDto;
