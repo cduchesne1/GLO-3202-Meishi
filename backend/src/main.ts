@@ -12,7 +12,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(helmet());
   app.enableCors({
-    origin: ['http://localhost:5173', 'https://meishi.social'],
+    origin: [configService.get('FRONTEND_URL')],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
