@@ -11,8 +11,14 @@ export class UsersService {
     private readonly encryptionService: EncryptionService,
   ) {}
 
+  async isUsernameTaken(username: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ username });
+
+    return user !== null;
+  }
+
   async findByUsername(username: string): Promise<User | undefined> {
-    return this.userModel.findOne({ username }).exec();
+    return this.userModel.findOne({ username });
   }
 
   async create(

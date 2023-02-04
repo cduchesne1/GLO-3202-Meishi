@@ -2,9 +2,11 @@ import { Box, Button, Flex, Heading, Link } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/auth-context';
 
 export default function NavBar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { isAuthenticated, isLoaded } = useAuth();
 
   const scrollListener = useCallback(() => {
     const winScroll =
@@ -49,8 +51,14 @@ export default function NavBar() {
           </Link>
         </Flex>
         <Flex flex={1} justify="flex-end" gap="1rem">
-          <Link as={NavLink} to="/login" _hover={{ textDecoration: 'none' }}>
-            <Button color="main">Login</Button>
+          <Link
+            as={NavLink}
+            to={isLoaded && isAuthenticated ? '/profile' : '/login'}
+            _hover={{ textDecoration: 'none' }}
+          >
+            <Button color="main">
+              {isLoaded && isAuthenticated ? 'Profile' : 'Login'}
+            </Button>
           </Link>
           <Link as={NavLink} to="/signup" _hover={{ textDecoration: 'none' }}>
             <Button color="white" bgColor="main">

@@ -8,6 +8,10 @@ name: Deploy to Firebase Hosting on merge
       - main
     paths:
       - frontend/**
+
+env:
+  VITE_API_URL: ${{ vars.VITE_API_URL }}
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
