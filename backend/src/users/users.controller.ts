@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { CheckUsernameDto } from './dto/check-username.dto';
 import { UsersService } from './users.service';
 
@@ -7,6 +7,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('check-username')
+  @HttpCode(200)
   async checkUsername(
     @Body() checkUsernameDto: CheckUsernameDto,
   ): Promise<any> {
