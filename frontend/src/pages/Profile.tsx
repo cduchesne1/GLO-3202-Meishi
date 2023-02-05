@@ -11,16 +11,17 @@ import {
   FormLabel,
   HStack,
   Input,
+  Show,
   Stack,
   Textarea,
   useDisclosure,
 } from '@chakra-ui/react';
 import { DragDropContext } from 'react-beautiful-dnd';
-import ProfileBar from '../components/ProfileBar';
 import StrictModeDroppable from '../components/StrictModeDroppable';
 import httpClient from '../common/http-client';
 import LinkList, { LinkType } from '../components/LinkList';
 import AddLinkModal from '../components/AddLinkModal';
+import ProfileBar from '../components/ProfileBar';
 
 const reorder = (list: any[], startIndex: number, endIndex: number) => {
   const result = Array.from(list);
@@ -33,11 +34,14 @@ const reorder = (list: any[], startIndex: number, endIndex: number) => {
 export default function Profile() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [profile, setProfile] = useState<any | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [iframeKey, setIframeKey] = useState(0);
 
   useEffect(() => {
     const fetchProfile = async () => {
       const { data } = await httpClient.get('/users/profile');
       setProfile(data.profile);
+      setUsername(data.username);
     };
     fetchProfile();
   }, []);
@@ -58,11 +62,12 @@ export default function Profile() {
           links: reordoredLinks,
         });
         setProfile({ ...profile, links: reordoredLinks });
+        setIframeKey(iframeKey + 1);
       } catch (error) {
         setProfile({ ...profile, links: profile.links });
       }
     },
-    [profile]
+    [profile, iframeKey]
   );
 
   const addLink = async (title: string, url: string) => {
@@ -74,6 +79,7 @@ export default function Profile() {
     try {
       await httpClient.patch('/users/profile', { links: newLinks });
       setProfile({ ...profile, links: newLinks });
+      setIframeKey(iframeKey + 1);
       onClose();
     } catch (error) {
       setProfile({ ...profile, links: profile.links });
@@ -88,6 +94,7 @@ export default function Profile() {
       );
       await httpClient.patch('/users/profile', { links: newLinks });
       setProfile({ ...profile, links: newLinks });
+      setIframeKey(iframeKey + 1);
     } catch (error) {
       setProfile({ ...profile, links: profile.links });
     }
@@ -105,6 +112,7 @@ export default function Profile() {
     try {
       await httpClient.patch('/users/profile', { picture: '' });
       setProfile({ ...profile, picture: null });
+      setIframeKey(iframeKey + 1);
     } catch (error) {
       setProfile({ ...profile, picture: null });
     }
@@ -120,6 +128,7 @@ export default function Profile() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfile({ ...profile, picture: e.target?.result as string });
+        setIframeKey(iframeKey + 1);
         updatePicture(e.target?.result as string);
       };
       reader.readAsDataURL(file);
@@ -130,16 +139,20 @@ export default function Profile() {
   const updateTitle = async (title: string) => {
     try {
       await httpClient.patch('/users/profile', { title });
+      setIframeKey(iframeKey + 1);
     } catch (error) {
       setProfile({ ...profile, title: null });
+      setIframeKey(iframeKey + 1);
     }
   };
 
   const updateBio = async (bio: string) => {
     try {
       await httpClient.patch('/users/profile', { bio });
+      setIframeKey(iframeKey + 1);
     } catch (error) {
       setProfile({ ...profile, bio: null });
+      setIframeKey(iframeKey + 1);
     }
   };
 
@@ -148,10 +161,10 @@ export default function Profile() {
   return (
     <>
       <Stack spacing={0}>
-        <ProfileBar picture={profile.picture} />
+        <ProfileBar picture={profile.picture} username={username} />
         <HStack
           px={{ base: '3rem', lg: '16rem' }}
-          justifyContent="space-between"
+          justifyContent={{ base: 'center', lg: 'space-between' }}
           alignItems="start"
         >
           <Flex mt="10rem">
@@ -170,14 +183,14 @@ export default function Profile() {
                         <Button
                           color="white"
                           bgColor="main"
-                          minW="25rem"
+                          minW={{ base: '10rem', lg: '25rem' }}
                           onClick={handleImageUpload}
                         >
                           Pick an image
                         </Button>
                         <Button
                           color="main"
-                          minW="25rem"
+                          minW={{ base: '10rem', lg: '25rem' }}
                           isDisabled={!profile.picture}
                           onClick={deletePicture}
                         >
@@ -237,15 +250,25 @@ export default function Profile() {
               </DragDropContext>
             </Stack>
           </Flex>
-          <Flex alignItems="center" h="100vh">
-            <Box
-              h="564px"
-              w="274px"
-              borderRadius="2xl"
-              borderWidth="1rem"
-              borderColor="#000"
-            />
-          </Flex>
+          <Show above="lg">
+            <Flex alignItems="center" h="100vh">
+              <iframe
+                key={iframeKey}
+                height="664px"
+                width="348px"
+                seamless
+                scrolling="no"
+                style={{
+                  overflow: 'hidden',
+                  borderRadius: '10px',
+                  borderWidth: '1rem',
+                  borderColor: '#000',
+                }}
+                title="Profile preview"
+                src={`${username}`}
+              />
+            </Flex>
+          </Show>
         </HStack>
       </Stack>
       <AddLinkModal isOpen={isOpen} onClose={onClose} addLink={addLink} />
