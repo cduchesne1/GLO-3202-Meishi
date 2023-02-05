@@ -26,6 +26,7 @@ jobs:
 
       - name: Install yarn dependencies
         run: yarn install --frozen-lockfile
+        working-directory: backend
 
   deploy:
     runs-on: ubuntu-latest
@@ -36,3 +37,4 @@ jobs:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: "meishi-production"
           heroku_email: ${{secrets.HEROKU_EMAIL_ADDRESS}}
+          appdir: backend
