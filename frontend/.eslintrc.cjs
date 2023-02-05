@@ -30,6 +30,7 @@ module.exports = {
     'react/jsx-wrap-multilines': 'off',
     'operator-linebreak': 'off',
     'object-curly-newline': 'off',
+    'no-param-reassign': 'off',
     'prettier/prettier': [
       'error',
       {
