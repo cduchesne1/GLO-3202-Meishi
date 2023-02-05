@@ -56,8 +56,8 @@ function Home() {
         </Heading>
         <Image
           maxH="33rem"
-          src="hero_preview.png"
-          alt="Meishi profile preview"
+          src="section_preview.png"
+          alt="The Rock profile preview"
         />
       </Box>
     </Stack>

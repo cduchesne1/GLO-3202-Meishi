@@ -23,9 +23,10 @@ import { useAuth } from '../context/auth-context';
 
 interface ProfileBarProps {
   picture: string;
+  username: string | null;
 }
 
-export default function ProfileBar({ picture }: ProfileBarProps) {
+export default function ProfileBar({ picture, username }: ProfileBarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const { logout } = useAuth();
@@ -49,7 +50,7 @@ export default function ProfileBar({ picture }: ProfileBarProps) {
   }, [scrollListener]);
 
   const copyLinkToClipboard = () => {
-    const link = 'https://meishi.social/cduchesne';
+    const link = `${import.meta.env.VITE_APP_BASE_URL}/${username}`;
     navigator.clipboard.writeText(link);
     setIsCopied(true);
     setTimeout(() => {
@@ -102,7 +103,10 @@ export default function ProfileBar({ picture }: ProfileBarProps) {
                   pointerEvents="none"
                   children={<Heading fontSize="1.25rem">m</Heading>}
                 />
-                <Input value="meishi.social/cduchesne" readOnly />
+                <Input
+                  value={`${import.meta.env.VITE_APP_BASE_URL}/${username}`}
+                  readOnly
+                />
                 <InputRightElement width="4.5rem">
                   <Button variant="ghost" onClick={copyLinkToClipboard}>
                     {isCopied ? 'Copied!' : 'Copy'}

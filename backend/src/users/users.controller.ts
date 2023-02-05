@@ -3,6 +3,8 @@ import {
   Controller,
   Get,
   HttpCode,
+  NotFoundException,
+  Param,
   Patch,
   Post,
   Req,
@@ -62,5 +64,24 @@ export class UsersController {
     const { user } = request;
 
     await this.usersService.updateProfile(user, updateProfileDto);
+  }
+
+  @Get(':username')
+  async getUser(@Param('username') username: string): Promise<any> {
+    const user = await this.usersService.findByUsername(username);
+
+    if (!user) {
+      throw new NotFoundException(`User "${username}" not found.`);
+    }
+
+    const json = user.toJSON();
+    const { title, bio, picture, links } = json.profile;
+
+    return {
+      title,
+      bio,
+      picture,
+      links,
+    };
   }
 }

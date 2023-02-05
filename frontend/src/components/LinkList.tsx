@@ -31,7 +31,7 @@ function LinkItem({
     <Draggable draggableId={link.url} index={index}>
       {(provided) => (
         <Card
-          w="36rem"
+          w={{ base: '20rem', lg: '36rem' }}
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
@@ -67,7 +67,7 @@ function LinkItem({
 const LinkList = React.memo(({ links, deleteLink }: any) =>
   links.map((link: LinkType, index: number) => (
     <LinkItem
-      key={link.url}
+      key={`${link.title}-${link.url}`}
       link={link}
       index={index}
       deleteLink={deleteLink}
