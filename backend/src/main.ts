@@ -21,4 +21,5 @@ async function bootstrap() {
 
   await app.listen(parseInt(configService.get('PORT'), 10) || 3000);
 }
+
 bootstrap();
