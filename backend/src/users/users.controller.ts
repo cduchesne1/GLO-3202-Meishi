@@ -1,5 +1,16 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CheckUsernameDto } from './dto/check-username.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -25,5 +36,31 @@ export class UsersController {
       };
     }
     return { available: true };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getProfile(@Req() request): Promise<any> {
+    const { user } = request;
+
+    const json = user.toJSON();
+    return {
+      // eslint-disable-next-line no-underscore-dangle
+      uid: json._id.toString(),
+      username: json.username,
+      email: json.email,
+      profile: json.profile,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  async updateProfile(
+    @Req() request,
+    @Body() updateProfileDto: UpdateProfileDto,
+  ): Promise<void> {
+    const { user } = request;
+
+    await this.usersService.updateProfile(user, updateProfileDto);
   }
 }
