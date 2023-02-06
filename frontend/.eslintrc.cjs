@@ -31,6 +31,7 @@ module.exports = {
     'operator-linebreak': 'off',
     'object-curly-newline': 'off',
     'no-param-reassign': 'off',
+    'no-useless-escape': 'off',
     'prettier/prettier': [
       'error',
       {

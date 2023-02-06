@@ -46,12 +46,18 @@ export class UsersController {
     const { user } = request;
 
     const json = user.toJSON();
+    const { title, bio, picture, links } = json.profile;
     return {
       // eslint-disable-next-line no-underscore-dangle
       uid: json._id.toString(),
       username: json.username,
       email: json.email,
-      profile: json.profile,
+      profile: {
+        title,
+        bio,
+        picture,
+        links,
+      },
     };
   }
 

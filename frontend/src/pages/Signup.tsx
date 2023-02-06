@@ -30,13 +30,18 @@ import { useAuth } from '../context/auth-context';
 
 export default function SignUp() {
   const { login } = useAuth();
+  const [previousUsername, setPreviousUsername] = useState('');
   const [signUpFailed, setSignUpFailed] = useState(false);
 
   const validateUsername = async (value: string) => {
     let error;
     if (!value) {
       error = 'Username is required';
-    } else {
+    } else if (value.length < 3) {
+      error = 'Username must be at least 3 characters';
+    } else if (value.length > 30) {
+      error = 'Username must be at most 30 characters';
+    } else if (value !== previousUsername) {
       const response = await httpClient.post('/users/check-username', {
         username: value,
       });
@@ -45,6 +50,11 @@ export default function SignUp() {
         error = data.message;
       }
     }
+
+    if (value !== previousUsername) {
+      setPreviousUsername(value);
+    }
+
     return error;
   };
 
@@ -74,7 +84,7 @@ export default function SignUp() {
         <Box bg="transparent" color="black" w="100%">
           <Flex
             py="4rem"
-            px={{ base: '3rem', lg: '16rem' }}
+            px={{ base: '2rem', lg: '16rem' }}
             align="center"
             justify="space-between"
           >
@@ -92,7 +102,7 @@ export default function SignUp() {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          px={{ base: '3rem', lg: '16rem' }}
+          px={{ base: '2rem', lg: '16rem' }}
         >
           <Card padding="2rem">
             <CardHeader>

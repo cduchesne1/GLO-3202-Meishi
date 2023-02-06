@@ -16,6 +16,7 @@ import {
   Textarea,
   useDisclosure,
 } from '@chakra-ui/react';
+import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext } from 'react-beautiful-dnd';
 import StrictModeDroppable from '../components/StrictModeDroppable';
 import httpClient from '../common/http-client';
@@ -73,6 +74,7 @@ export default function Profile() {
   const addLink = async (title: string, url: string) => {
     const newLinks = [...profile.links];
     newLinks.unshift({
+      id: uuidv4(),
       title,
       url,
     });
@@ -87,11 +89,9 @@ export default function Profile() {
     }
   };
 
-  const deleteLink = async (url: string) => {
+  const deleteLink = async (id: string) => {
     try {
-      const newLinks = profile.links.filter(
-        (link: LinkType) => link.url !== url
-      );
+      const newLinks = profile.links.filter((link: LinkType) => link.id !== id);
       await httpClient.patch('/users/profile', { links: newLinks });
       setProfile({ ...profile, links: newLinks });
       setIframeKey(iframeKey + 1);
@@ -127,9 +127,21 @@ export default function Profile() {
       const file = (event.target as HTMLInputElement).files![0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfile({ ...profile, picture: e.target?.result as string });
+        setProfile({
+          ...profile,
+
+          picture: (e.target?.result as string).replace(
+            /^data:image\/[a-z]+;base64,/,
+            ''
+          ),
+        });
         setIframeKey(iframeKey + 1);
-        updatePicture(e.target?.result as string);
+        updatePicture(
+          (e.target?.result as string).replace(
+            /^data:image\/[a-z]+;base64,/,
+            ''
+          )
+        );
       };
       reader.readAsDataURL(file);
     };
@@ -177,7 +189,10 @@ export default function Profile() {
                         size="xl"
                         name={profile.title}
                         bgColor="main"
-                        src={profile.picture || undefined}
+                        src={
+                          `data:image/jpeg;base64,${profile.picture}` ||
+                          undefined
+                        }
                       />
                       <Flex direction="column" gap="1rem">
                         <Button
@@ -204,6 +219,7 @@ export default function Profile() {
                         placeholder="Profile title"
                         onBlur={onClose}
                         value={profile.title}
+                        maxLength={50}
                         onChange={(event) => {
                           setProfile({ ...profile, title: event.target.value });
                         }}
@@ -221,6 +237,7 @@ export default function Profile() {
                         placeholder="Bio"
                         onBlur={onClose}
                         value={profile.bio}
+                        maxLength={80}
                         onChange={(event) => {
                           setProfile({ ...profile, bio: event.target.value });
                         }}

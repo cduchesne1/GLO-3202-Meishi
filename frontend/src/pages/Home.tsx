@@ -18,6 +18,7 @@ function Home() {
         alignItems="center"
         justifyContent={{ base: 'center', lg: 'space-between' }}
         px={{ base: '3rem', lg: '16rem' }}
+        pt={{ base: '20rem', md: '0' }}
       >
         <Heading
           color="main"

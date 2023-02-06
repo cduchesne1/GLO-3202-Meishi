@@ -14,6 +14,7 @@ import { Draggable } from 'react-beautiful-dnd';
 import { DeleteIcon, DragHandleIcon } from '@chakra-ui/icons';
 
 export type LinkType = {
+  id: string;
   title: string;
   url: string;
 };
@@ -25,10 +26,10 @@ function LinkItem({
 }: {
   link: LinkType;
   index: number;
-  deleteLink: (url: string) => void;
+  deleteLink: (id: string) => void;
 }) {
   return (
-    <Draggable draggableId={link.url} index={index}>
+    <Draggable draggableId={link.id} index={index}>
       {(provided) => (
         <Card
           w={{ base: '20rem', lg: '36rem' }}
@@ -53,7 +54,7 @@ function LinkItem({
                   aria-label="Delete"
                   variant="ghost"
                   icon={<DeleteIcon />}
-                  onClick={() => deleteLink(link.url)}
+                  onClick={() => deleteLink(link.id)}
                 />
               </Flex>
             </Flex>
@@ -67,7 +68,7 @@ function LinkItem({
 const LinkList = React.memo(({ links, deleteLink }: any) =>
   links.map((link: LinkType, index: number) => (
     <LinkItem
-      key={`${link.title}-${link.url}`}
+      key={link.id}
       link={link}
       index={index}
       deleteLink={deleteLink}

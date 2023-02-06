@@ -50,18 +50,22 @@ export default function NavBar() {
             <Heading fontSize="1.75rem">meishi</Heading>
           </Link>
         </Flex>
-        <Flex flex={1} justify="flex-end" gap="1rem">
+        <Flex flex={1} justify="flex-end" align="center" gap="1rem">
           <Link
             as={NavLink}
             to={isLoaded && isAuthenticated ? '/profile' : '/login'}
             _hover={{ textDecoration: 'none' }}
           >
-            <Button color="main">
+            <Button color="main" size={{ base: 'sm', md: 'lg' }}>
               {isLoaded && isAuthenticated ? 'Profile' : 'Login'}
             </Button>
           </Link>
           <Link as={NavLink} to="/signup" _hover={{ textDecoration: 'none' }}>
-            <Button color="white" bgColor="main">
+            <Button
+              color="white"
+              bgColor="main"
+              size={{ base: 'sm', md: 'lg' }}
+            >
               Sign Up
             </Button>
           </Link>
