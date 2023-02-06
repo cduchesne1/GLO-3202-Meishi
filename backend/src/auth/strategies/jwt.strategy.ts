@@ -18,13 +18,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any): Promise<User> {
-    const user = await this.usersService.findByUsername(payload.username);
+  async validate(payload: any): Promise<any> {
+    const user: User = await this.usersService.findByUsername(payload.username);
 
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    return user;
+    return { user, fingerprint: payload.userFingerPrint };
   }
 }

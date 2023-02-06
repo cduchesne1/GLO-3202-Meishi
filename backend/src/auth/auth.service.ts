@@ -26,12 +26,22 @@ export class AuthService {
     return null;
   }
 
-  async createAccessToken(uid: string, username: string, email: string) {
+  generateFingerprint() {
+    return this.encryptionService.generateFingerprint();
+  }
+
+  async createAccessToken(
+    uid: string,
+    username: string,
+    email: string,
+    fingerprintHash: string,
+  ) {
     return this.jwtService.sign(
       {
         sub: uid,
         username,
         email,
+        userFingerPrint: fingerprintHash,
       },
       {
         secret: this.configService.get<string>('JWT_SECRET'),
@@ -40,15 +50,40 @@ export class AuthService {
     );
   }
 
-  async createRefreshToken(uid: string, username: string, email: string) {
+  async verifyToken(token: string, fingerprint: string) {
+    try {
+      const fingerprintHash =
+        this.encryptionService.hashFingerprint(fingerprint);
+      const { sub, username, email, userFingerPrint } = this.jwtService.verify(
+        token,
+        {
+          secret: this.configService.get<string>('JWT_SECRET'),
+        },
+      );
+
+      if (userFingerPrint !== fingerprintHash) {
+        throw new UnauthorizedException();
+      }
+
+      return {
+        uid: sub,
+        username,
+        email,
+        userFingerPrint,
+      };
+    } catch (error) {
+      throw new UnauthorizedException();
+    }
+  }
+
+  async createRefreshToken(uid: string, username: string) {
     return this.jwtService.sign(
       {
         sub: uid,
         username,
-        email,
       },
       {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
         expiresIn: '7d',
       },
     );
@@ -57,12 +92,15 @@ export class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       const { sub, username, email } = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
+      const { fingerprint, hash } = this.generateFingerprint();
+
       return {
-        accessToken: await this.createAccessToken(sub, username, email),
-        refreshToken: await this.createRefreshToken(sub, username, email),
+        accessToken: await this.createAccessToken(sub, username, email, hash),
+        refreshToken: await this.createRefreshToken(sub, username),
+        fingerprint,
       };
     } catch (error) {
       throw new UnauthorizedException();
