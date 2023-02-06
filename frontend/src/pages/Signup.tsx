@@ -84,7 +84,7 @@ export default function SignUp() {
         <Box bg="transparent" color="black" w="100%">
           <Flex
             py="4rem"
-            px={{ base: '3rem', lg: '16rem' }}
+            px={{ base: '2rem', lg: '16rem' }}
             align="center"
             justify="space-between"
           >
@@ -102,7 +102,7 @@ export default function SignUp() {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          px={{ base: '3rem', lg: '16rem' }}
+          px={{ base: '2rem', lg: '16rem' }}
         >
           <Card padding="2rem">
             <CardHeader>
