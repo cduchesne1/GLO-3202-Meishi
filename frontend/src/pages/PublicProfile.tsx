@@ -82,7 +82,7 @@ export default function PublicProfile() {
         w="100%"
         h="100%"
         minH="100vh"
-        bgImage={`url(${profile.picture})`}
+        bgImage={`url(data:image/jpeg;base64,${profile.picture})`}
         bgRepeat="no-repeat"
         bgPosition="center"
         bgSize="cover"
@@ -141,7 +141,10 @@ export default function PublicProfile() {
               </MenuList>
             </Menu>
           </Flex>
-          <Avatar size="2xl" src={profile.picture} />
+          <Avatar
+            size="2xl"
+            src={`data:image/jpeg;base64,${profile.picture}`}
+          />
           <Heading textAlign="center">{profile.title}</Heading>
           <Text textAlign="center">{profile.bio}</Text>
           {profile.links.map((link: any) => (

@@ -1,11 +1,13 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBase64,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUrl,
   IsUUID,
+  MaxLength,
   ValidateNested,
 } from 'class-validator';
 
@@ -20,6 +22,7 @@ class Link {
   readonly title: string;
 
   @IsString()
+  @IsNotEmpty()
   @IsUrl()
   readonly url: string;
 }
@@ -27,14 +30,17 @@ class Link {
 export class UpdateProfileDto {
   @IsString()
   @IsOptional()
+  @IsBase64()
   readonly picture?: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(50)
   readonly title?: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(80)
   readonly bio?: string;
 
   @IsArray()

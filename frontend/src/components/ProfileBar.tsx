@@ -117,7 +117,11 @@ export default function ProfileBar({ picture, username }: ProfileBarProps) {
           </Menu>
           <Menu>
             <MenuButton>
-              <Avatar size="sm" bgColor="main" src={picture} />
+              <Avatar
+                size="sm"
+                bgColor="main"
+                src={`data:image/jpeg;base64,${picture}`}
+              />
             </MenuButton>
             <MenuList>
               <MenuItem onClick={logout}>

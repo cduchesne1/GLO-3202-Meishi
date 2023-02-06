@@ -127,9 +127,21 @@ export default function Profile() {
       const file = (event.target as HTMLInputElement).files![0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfile({ ...profile, picture: e.target?.result as string });
+        setProfile({
+          ...profile,
+
+          picture: (e.target?.result as string).replace(
+            /^data:image\/[a-z]+;base64,/,
+            ''
+          ),
+        });
         setIframeKey(iframeKey + 1);
-        updatePicture(e.target?.result as string);
+        updatePicture(
+          (e.target?.result as string).replace(
+            /^data:image\/[a-z]+;base64,/,
+            ''
+          )
+        );
       };
       reader.readAsDataURL(file);
     };
@@ -177,7 +189,10 @@ export default function Profile() {
                         size="xl"
                         name={profile.title}
                         bgColor="main"
-                        src={profile.picture || undefined}
+                        src={
+                          `data:image/jpeg;base64,${profile.picture}` ||
+                          undefined
+                        }
                       />
                       <Flex direction="column" gap="1rem">
                         <Button
@@ -204,6 +219,7 @@ export default function Profile() {
                         placeholder="Profile title"
                         onBlur={onClose}
                         value={profile.title}
+                        maxLength={50}
                         onChange={(event) => {
                           setProfile({ ...profile, title: event.target.value });
                         }}
@@ -221,6 +237,7 @@ export default function Profile() {
                         placeholder="Bio"
                         onBlur={onClose}
                         value={profile.bio}
+                        maxLength={80}
                         onChange={(event) => {
                           setProfile({ ...profile, bio: event.target.value });
                         }}
