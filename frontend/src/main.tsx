@@ -28,7 +28,7 @@ function ProtectedRoute({ children }: any) {
   }, [isLoaded, user, refresh]);
 
   if (!isLoaded) {
-    return <div />;
+    return null;
   }
 
   return isAuthenticated ? (
