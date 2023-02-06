@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL as string,
+  withCredentials: true,
 });
 
 httpClient.interceptors.request.use((config) => {
@@ -23,13 +24,18 @@ httpClient.interceptors.response.use(
       if (user && user.tokenManager && user.tokenManager.refreshToken) {
         const { refreshToken } = user.tokenManager;
         return axios
-          .post(`${import.meta.env.VITE_API_URL}/auth/token`, {
-            refreshToken,
-          })
+          .post(
+            `${import.meta.env.VITE_API_URL}/auth/token`,
+            {
+              refreshToken,
+            },
+            { withCredentials: true }
+          )
           .then((response) => {
             if (response.status === 401) {
               localStorage.removeItem('user');
               window.location.href = '/login';
+              return Promise.reject(error);
             }
             const tokenManager = response.data;
             localStorage.setItem(

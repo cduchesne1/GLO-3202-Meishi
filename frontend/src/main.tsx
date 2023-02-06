@@ -22,16 +22,20 @@ function ProtectedRoute({ children }: any) {
   const location = useLocation();
 
   useEffect(() => {
+    console.log('checking token');
+    console.log('isLoaded2.1', isLoaded);
     if (isLoaded && user && user.tokenManager.expirationTime < Date.now()) {
+      console.log('refreshing token');
       refresh();
     }
   }, [isLoaded, user, refresh]);
 
   if (!isLoaded) {
+    console.log('retruning null');
     return null;
   }
 
-  return isAuthenticated ? (
+  return isAuthenticated && isLoaded ? (
     children
   ) : (
     <Navigate to="/login" state={{ from: location }} replace />

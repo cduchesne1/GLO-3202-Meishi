@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, {
   createContext,
   useCallback,
@@ -33,17 +34,66 @@ export default function AuthProvider({ children }: any) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user') as string);
-    if (
-      storedUser &&
-      storedUser.tokenManager &&
-      new Date(storedUser.tokenManager.expirationTime) > new Date()
-    ) {
-      setUser(storedUser);
-      setIsAuthenticated(true);
-    }
+  const setCurrentUser = (currentUser: any) => {
+    setUser(currentUser);
+    setIsAuthenticated(true);
+    localStorage.setItem('user', JSON.stringify(currentUser));
     setIsLoaded(true);
+  };
+
+  const clearCurrentUser = () => {
+    localStorage.removeItem('user');
+    setUser(undefined);
+    setIsAuthenticated(false);
+    setIsLoaded(true);
+    if (window.location.pathname !== '/') {
+      window.location.href = '/login';
+    }
+  };
+
+  const logout = useCallback(() => {
+    setUser(undefined);
+    setIsAuthenticated(false);
+    localStorage.removeItem('user');
+    navigate('/login', { replace: true });
+  }, [navigate]);
+
+  useEffect(() => {
+    async function checkAuthStatus() {
+      const storedUser = JSON.parse(localStorage.getItem('user') as string);
+      if (storedUser && storedUser.tokenManager) {
+        try {
+          await axios.post(
+            `${import.meta.env.VITE_API_URL}/auth/checkToken`,
+            {
+              accessToken: storedUser.tokenManager.accessToken,
+            },
+            { withCredentials: true }
+          );
+          setCurrentUser(storedUser);
+          return;
+        } catch (error: any) {
+          if (error.response.status === 401) {
+            try {
+              const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/auth/token`,
+                {
+                  refreshToken: storedUser.tokenManager.refreshToken,
+                },
+                { withCredentials: true }
+              );
+              setCurrentUser({ ...storedUser, tokenManager: response.data });
+              return;
+            } catch (e: any) {
+              clearCurrentUser();
+            }
+          }
+          clearCurrentUser();
+        }
+      }
+      setIsLoaded(true);
+    }
+    checkAuthStatus();
   }, []);
 
   useEffect(() => {
@@ -64,13 +114,6 @@ export default function AuthProvider({ children }: any) {
     },
     [navigate]
   );
-
-  const logout = useCallback(() => {
-    setUser(undefined);
-    setIsAuthenticated(false);
-    localStorage.removeItem('user');
-    navigate('/login', { replace: true });
-  }, [navigate]);
 
   const refresh = useCallback(async () => {
     try {
