@@ -16,6 +16,7 @@ import {
   Textarea,
   useDisclosure,
 } from '@chakra-ui/react';
+import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext } from 'react-beautiful-dnd';
 import StrictModeDroppable from '../components/StrictModeDroppable';
 import httpClient from '../common/http-client';
@@ -73,6 +74,7 @@ export default function Profile() {
   const addLink = async (title: string, url: string) => {
     const newLinks = [...profile.links];
     newLinks.unshift({
+      id: uuidv4(),
       title,
       url,
     });
@@ -87,11 +89,9 @@ export default function Profile() {
     }
   };
 
-  const deleteLink = async (url: string) => {
+  const deleteLink = async (id: string) => {
     try {
-      const newLinks = profile.links.filter(
-        (link: LinkType) => link.url !== url
-      );
+      const newLinks = profile.links.filter((link: LinkType) => link.id !== id);
       await httpClient.patch('/users/profile', { links: newLinks });
       setProfile({ ...profile, links: newLinks });
       setIframeKey(iframeKey + 1);

@@ -4,6 +4,18 @@ import { HydratedDocument, Document } from 'mongoose';
 export type UserDocument = HydratedDocument<User>;
 
 @Schema()
+export class Link {
+  @Prop()
+  id: string;
+
+  @Prop()
+  title: string;
+
+  @Prop()
+  url: string;
+}
+
+@Schema()
 export class Profile {
   @Prop()
   title: string;
@@ -15,7 +27,7 @@ export class Profile {
   picture: string;
 
   @Prop()
-  links: string[];
+  links: Link[];
 }
 
 @Schema()

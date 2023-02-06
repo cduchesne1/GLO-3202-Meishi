@@ -1,11 +1,26 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 
 class Link {
   @IsString()
+  @IsNotEmpty()
+  @IsUUID()
+  readonly id: string;
+
+  @IsString()
+  @IsNotEmpty()
   readonly title: string;
 
   @IsString()
+  @IsUrl()
   readonly url: string;
 }
 
