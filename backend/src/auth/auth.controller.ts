@@ -11,6 +11,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -21,6 +22,7 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 @Controller('auth')
 export class AuthController {
   constructor(
+    private readonly configService: ConfigService,
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
   ) {}
@@ -61,6 +63,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     return response.status(HttpStatus.CREATED).json({
@@ -102,6 +105,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     return response.status(HttpStatus.OK).json({
@@ -140,6 +144,7 @@ export class AuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     });
 
     return response.status(HttpStatus.OK).json({
