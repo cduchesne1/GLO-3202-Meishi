@@ -20,7 +20,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import httpClient from '../common/http-client';
+import httpClient from '../api/http-client';
 
 export default function PublicProfile() {
   const { username } = useParams();

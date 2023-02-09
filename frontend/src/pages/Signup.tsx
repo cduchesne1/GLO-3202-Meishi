@@ -25,7 +25,7 @@ import { Field, Form, Formik } from 'formik';
 import React, { useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { NavLink } from 'react-router-dom';
-import httpClient from '../common/http-client';
+import httpClient from '../api/http-client';
 import { useAuth } from '../context/auth-context';
 
 export default function SignUp() {

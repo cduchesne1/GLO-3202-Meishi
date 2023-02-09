@@ -19,7 +19,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { DragDropContext } from 'react-beautiful-dnd';
 import StrictModeDroppable from '../components/StrictModeDroppable';
-import httpClient from '../common/http-client';
+import httpClient from '../api/http-client';
 import LinkList, { LinkType } from '../components/LinkList';
 import AddLinkModal from '../components/AddLinkModal';
 import ProfileBar from '../components/ProfileBar';

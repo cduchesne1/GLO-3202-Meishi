@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { useNavigate } from 'react-router-dom';
-import httpClient from '../common/http-client';
+import httpClient from '../api/http-client';
 
 interface IAuthContext {
   isLoaded: boolean;
