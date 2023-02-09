@@ -60,6 +60,8 @@ export class AuthController {
 
     const json = user.toJSON();
     response.cookie('Secure-Fgp', fingerprint, {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600 * 1000,
@@ -102,6 +104,8 @@ export class AuthController {
     const json = user.toJSON();
 
     response.cookie('Secure-Fgp', fingerprint, {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600 * 1000,
@@ -141,6 +145,8 @@ export class AuthController {
     const newTokens = await this.authService.refreshToken(refreshToken);
 
     response.cookie('Secure-Fgp', newTokens.fingerprint, {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600 * 1000,
