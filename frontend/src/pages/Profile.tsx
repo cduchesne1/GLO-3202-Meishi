@@ -1,5 +1,5 @@
 /* eslint-disable prefer-arrow-callback */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -23,6 +23,7 @@ import httpClient from '../api/http-client';
 import LinkList, { LinkType } from '../components/LinkList';
 import AddLinkModal from '../components/AddLinkModal';
 import ProfileBar from '../components/ProfileBar';
+import { useAuth } from '../context/auth-context';
 
 const reorder = (list: any[], startIndex: number, endIndex: number) => {
   const result = Array.from(list);
@@ -33,19 +34,9 @@ const reorder = (list: any[], startIndex: number, endIndex: number) => {
 };
 
 export default function Profile() {
+  const { user, updateUser, isLoaded } = useAuth();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [profile, setProfile] = useState<any | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
   const [iframeKey, setIframeKey] = useState(0);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const { data } = await httpClient.get('/users/profile');
-      setProfile(data.profile);
-      setUsername(data.username);
-    };
-    fetchProfile();
-  }, []);
 
   const onDragEnd = useCallback(
     async (result: any) => {
@@ -53,7 +44,7 @@ export default function Profile() {
       if (result.destination.index === result.source.index) return;
 
       const reordoredLinks = reorder(
-        profile.links,
+        user.profile.links,
         result.source.index,
         result.destination.index
       );
@@ -62,17 +53,23 @@ export default function Profile() {
         await httpClient.patch('/users/profile', {
           links: reordoredLinks,
         });
-        setProfile({ ...profile, links: reordoredLinks });
+        updateUser({
+          ...user,
+          profile: { ...user.profile, links: reordoredLinks },
+        });
         setIframeKey(iframeKey + 1);
       } catch (error) {
-        setProfile({ ...profile, links: profile.links });
+        updateUser({
+          ...user,
+          profile: { ...user.profile, links: user.profile.links },
+        });
       }
     },
-    [profile, iframeKey]
+    [user, updateUser, iframeKey]
   );
 
   const addLink = async (title: string, url: string) => {
-    const newLinks = [...profile.links];
+    const newLinks = [...user.profile.links];
     newLinks.unshift({
       id: uuidv4(),
       title,
@@ -80,23 +77,31 @@ export default function Profile() {
     });
     try {
       await httpClient.patch('/users/profile', { links: newLinks });
-      setProfile({ ...profile, links: newLinks });
+      updateUser({ ...user, profile: { ...user.profile, links: newLinks } });
       setIframeKey(iframeKey + 1);
       onClose();
     } catch (error) {
-      setProfile({ ...profile, links: profile.links });
+      updateUser({
+        ...user,
+        profile: { ...user.profile, links: user.profile.links },
+      });
       onClose();
     }
   };
 
   const deleteLink = async (id: string) => {
     try {
-      const newLinks = profile.links.filter((link: LinkType) => link.id !== id);
+      const newLinks = user.profile.links.filter(
+        (link: LinkType) => link.id !== id
+      );
       await httpClient.patch('/users/profile', { links: newLinks });
-      setProfile({ ...profile, links: newLinks });
+      updateUser({ ...user, profile: { ...user.profile, links: newLinks } });
       setIframeKey(iframeKey + 1);
     } catch (error) {
-      setProfile({ ...profile, links: profile.links });
+      updateUser({
+        ...user,
+        profile: { ...user.profile, links: user.profile.links },
+      });
     }
   };
 
@@ -104,17 +109,17 @@ export default function Profile() {
     try {
       await httpClient.patch('/users/profile', { picture });
     } catch (error) {
-      setProfile({ ...profile, picture: null });
+      updateUser({ ...user, profile: { ...user.profile, picture: null } });
     }
   };
 
   const deletePicture = async () => {
     try {
       await httpClient.patch('/users/profile', { picture: '' });
-      setProfile({ ...profile, picture: null });
+      updateUser({ ...user, profile: { ...user.profile, picture: null } });
       setIframeKey(iframeKey + 1);
     } catch (error) {
-      setProfile({ ...profile, picture: null });
+      // ignore
     }
   };
 
@@ -127,21 +132,13 @@ export default function Profile() {
       const file = (event.target as HTMLInputElement).files![0];
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfile({
-          ...profile,
-
-          picture: (e.target?.result as string).replace(
-            /^data:image\/[a-z]+;base64,/,
-            ''
-          ),
-        });
-        setIframeKey(iframeKey + 1);
         updatePicture(
           (e.target?.result as string).replace(
             /^data:image\/[a-z]+;base64,/,
             ''
           )
         );
+        setIframeKey(iframeKey + 1);
       };
       reader.readAsDataURL(file);
     };
@@ -151,9 +148,10 @@ export default function Profile() {
   const updateTitle = async (title: string) => {
     try {
       await httpClient.patch('/users/profile', { title });
+      updateUser({ ...user, profile: { ...user.profile, title } });
       setIframeKey(iframeKey + 1);
     } catch (error) {
-      setProfile({ ...profile, title: null });
+      updateUser({ ...user, profile: { ...user.profile, title: null } });
       setIframeKey(iframeKey + 1);
     }
   };
@@ -161,19 +159,20 @@ export default function Profile() {
   const updateBio = async (bio: string) => {
     try {
       await httpClient.patch('/users/profile', { bio });
+      updateUser({ ...user, profile: { ...user.profile, bio } });
       setIframeKey(iframeKey + 1);
     } catch (error) {
-      setProfile({ ...profile, bio: null });
+      updateUser({ ...user, profile: { ...user.profile, bio: null } });
       setIframeKey(iframeKey + 1);
     }
   };
 
-  if (!profile) return null;
+  if (!user || !isLoaded) return null;
 
   return (
     <>
       <Stack spacing={0}>
-        <ProfileBar picture={profile.picture} username={username} />
+        <ProfileBar picture={user.profile.picture} username={user.username} />
         <HStack
           px={{ base: '3rem', lg: '16rem' }}
           justifyContent={{ base: 'center', lg: 'space-between' }}
@@ -187,10 +186,10 @@ export default function Profile() {
                     <HStack spacing="1rem">
                       <Avatar
                         size="xl"
-                        name={profile.title}
+                        name={user.profile.title}
                         bgColor="main"
                         src={
-                          `data:image/jpeg;base64,${profile.picture}` ||
+                          `data:image/jpeg;base64,${user.profile.picture}` ||
                           undefined
                         }
                       />
@@ -206,7 +205,7 @@ export default function Profile() {
                         <Button
                           color="main"
                           minW={{ base: '10rem', lg: '25rem' }}
-                          isDisabled={!profile.picture}
+                          isDisabled={!user.profile.picture}
                           onClick={deletePicture}
                         >
                           Remove
@@ -218,14 +217,20 @@ export default function Profile() {
                       <Input
                         placeholder="Profile title"
                         onBlur={onClose}
-                        value={profile.title}
+                        value={user.profile.title}
                         maxLength={50}
                         onChange={(event) => {
-                          setProfile({ ...profile, title: event.target.value });
+                          updateUser({
+                            ...user,
+                            profile: {
+                              ...user.profile,
+                              title: event.target.value,
+                            },
+                          });
                         }}
                         onKeyDown={(event: any) => {
                           if (event.key === 'Enter') {
-                            updateTitle(profile.title);
+                            updateTitle(user.profile.title);
                             event.target.blur();
                           }
                         }}
@@ -236,14 +241,20 @@ export default function Profile() {
                       <Textarea
                         placeholder="Bio"
                         onBlur={onClose}
-                        value={profile.bio}
+                        value={user.profile.bio}
                         maxLength={80}
                         onChange={(event) => {
-                          setProfile({ ...profile, bio: event.target.value });
+                          updateUser({
+                            ...user,
+                            profile: {
+                              ...user.profile,
+                              bio: event.target.value,
+                            },
+                          });
                         }}
                         onKeyDown={(event: any) => {
                           if (event.key === 'Enter') {
-                            updateBio(profile.bio);
+                            updateBio(user.profile.bio);
                             event.target.blur();
                           }
                         }}
@@ -259,7 +270,10 @@ export default function Profile() {
                 <StrictModeDroppable droppableId="links">
                   {(provided) => (
                     <Box ref={provided.innerRef} {...provided.droppableProps}>
-                      <LinkList links={profile.links} deleteLink={deleteLink} />
+                      <LinkList
+                        links={user.profile.links}
+                        deleteLink={deleteLink}
+                      />
                       {provided.placeholder}
                     </Box>
                   )}
@@ -282,7 +296,7 @@ export default function Profile() {
                   borderColor: '#000',
                 }}
                 title="Profile preview"
-                src={`${username}`}
+                src={`${user.username}`}
               />
             </Flex>
           </Show>
