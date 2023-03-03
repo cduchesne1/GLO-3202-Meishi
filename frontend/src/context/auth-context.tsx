@@ -82,7 +82,7 @@ export default function AuthProvider({ children }: any) {
   const logout = useCallback(async () => {
     try {
       setIsLoaded(false);
-      await httpClient.post('/auth/logout');
+      await httpClient.post('/auth/logout', { withCredentials: true });
     } catch (e) {
       // ignore
     } finally {
