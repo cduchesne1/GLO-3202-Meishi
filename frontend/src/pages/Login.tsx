@@ -24,7 +24,6 @@ import { Field, Form, Formik } from 'formik';
 import React, { useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { NavLink } from 'react-router-dom';
-import httpClient from '../api/http-client';
 import { useAuth } from '../context/auth-context';
 
 export default function Login() {
@@ -94,13 +93,11 @@ export default function Login() {
                 onSubmit={async (values) => {
                   setLoginFailed(false);
                   try {
-                    const response = await httpClient.post('/auth/login', {
-                      username: values.username,
-                      password: values.password,
-                    });
-                    if (response.status === 200) {
-                      login(response.data);
-                    }
+                    const logged = await login(
+                      values.username,
+                      values.password
+                    );
+                    setLoginFailed(!logged);
                   } catch (err) {
                     setLoginFailed(true);
                   }

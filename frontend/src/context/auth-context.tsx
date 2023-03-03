@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, {
   createContext,
   useCallback,
@@ -13,8 +12,9 @@ interface IAuthContext {
   isLoaded: boolean;
   user?: any;
   isAuthenticated: boolean;
-  login: (currentUser: any) => void;
-  refresh: () => void;
+  updateUser: (updatedUser: any) => void;
+  login: (username: string, password: string) => Promise<boolean>;
+  checkToken: () => void;
   logout: () => void;
 }
 
@@ -23,8 +23,10 @@ const AuthContext = createContext({
   user: undefined,
   isAuthenticated: false,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  login: (currentUser: any) => {},
-  refresh: () => {},
+  login: (username: string, password: string) => Promise.resolve(false),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  updateUser: (updatedUser: any) => {},
+  checkToken: () => {},
   logout: () => {},
 } as IAuthContext);
 
@@ -34,103 +36,82 @@ export default function AuthProvider({ children }: any) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
 
-  const setCurrentUser = (currentUser: any) => {
-    setUser(currentUser);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(currentUser));
-    setIsLoaded(true);
-  };
-
-  const clearCurrentUser = () => {
-    localStorage.removeItem('user');
-    setUser(undefined);
-    setIsAuthenticated(false);
-    setIsLoaded(true);
-    if (window.location.pathname !== '/') {
-      window.location.href = '/login';
-    }
-  };
-
-  const logout = useCallback(() => {
-    setUser(undefined);
-    setIsAuthenticated(false);
-    localStorage.removeItem('user');
-    navigate('/login', { replace: true });
-  }, [navigate]);
-
   useEffect(() => {
-    async function checkAuthStatus() {
-      const storedUser = JSON.parse(localStorage.getItem('user') as string);
-      if (storedUser && storedUser.tokenManager) {
-        try {
-          await axios.post(
-            `${import.meta.env.VITE_API_URL}/auth/checkToken`,
-            {
-              accessToken: storedUser.tokenManager.accessToken,
-            },
-            { withCredentials: true }
-          );
-          setCurrentUser(storedUser);
-          return;
-        } catch (error: any) {
-          if (error.response.status === 401) {
-            try {
-              const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/auth/token`,
-                {
-                  refreshToken: storedUser.tokenManager.refreshToken,
-                },
-                { withCredentials: true }
-              );
-              setCurrentUser({ ...storedUser, tokenManager: response.data });
-              return;
-            } catch (e: any) {
-              clearCurrentUser();
-            }
-          }
-          clearCurrentUser();
-        }
-      }
-      setIsLoaded(true);
-    }
-    checkAuthStatus();
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('storage', (event) => {
-      if (event.key === 'user' && !event.newValue) {
+    const fetchUser = async () => {
+      try {
+        const { data } = await httpClient.get('/users/profile');
+        setUser(data);
+        setIsAuthenticated(true);
+      } catch (e) {
         setUser(undefined);
         setIsAuthenticated(false);
+      } finally {
+        setIsLoaded(true);
       }
-    });
-  });
+    };
+    fetchUser();
+  }, []);
 
   const login = useCallback(
-    (currentUser: any) => {
-      setUser(currentUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(currentUser));
-      navigate('/profile', { replace: true });
+    async (username: string, password: string) => {
+      try {
+        setIsLoaded(false);
+        const { data } = await httpClient.post('/auth/login', {
+          username,
+          password,
+        });
+        setUser(data);
+        setIsAuthenticated(true);
+        navigate('/profile', { replace: true });
+        return true;
+      } catch (e) {
+        setUser(undefined);
+        setIsAuthenticated(false);
+        return false;
+      } finally {
+        setIsLoaded(true);
+      }
     },
     [navigate]
   );
 
-  const refresh = useCallback(async () => {
+  const updateUser = useCallback((updatedUser: any) => {
+    setUser(updatedUser);
+  }, []);
+
+  const logout = useCallback(async () => {
     try {
-      const response = await httpClient.post('/auth/token', {
-        refreshToken: user.tokenManager.refreshToken,
-      });
-      setUser({ ...user, tokenManager: response.data });
-      setIsAuthenticated(true);
-      localStorage.setItem('user', JSON.stringify(response.data));
+      setIsLoaded(false);
+      await httpClient.post('/auth/logout');
     } catch (e) {
-      logout();
+      // ignore
+    } finally {
+      setUser(undefined);
+      setIsAuthenticated(false);
+      setIsLoaded(true);
+      navigate('/login', { replace: true });
     }
-  }, [user, logout]);
+  }, [navigate]);
+
+  const checkToken = useCallback(async () => {
+    try {
+      await httpClient.post('/auth/checkToken');
+    } catch (e) {
+      await logout();
+    }
+  }, [logout]);
 
   const value = useMemo(
-    () => ({ isLoaded, user, isAuthenticated, login, refresh, logout }),
-    [isLoaded, user, isAuthenticated, login, refresh, logout]
+    () => ({
+      isLoaded,
+      user,
+      isAuthenticated,
+      login,
+      updateUser,
+      checkToken,
+      logout,
+    }),
+    [isLoaded, user, isAuthenticated, login, updateUser, checkToken, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

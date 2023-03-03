@@ -18,7 +18,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   handleRequest(_err, user, _info, context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-    const fingerprint = request.cookies ? request.cookies['Secure-Fgp'] : '';
+    const fingerprint = request.cookies['Secure-Fgp'];
+
+    if (!fingerprint) {
+      throw new UnauthorizedException();
+    }
+
     const fingerprintHash = this.encryptionService.hashFingerprint(fingerprint);
 
     if (!fingerprint || !user || fingerprintHash !== user.fingerprint) {

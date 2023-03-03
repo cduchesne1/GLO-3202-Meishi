@@ -33,14 +33,12 @@ export class AuthService {
   async createAccessToken(
     uid: string,
     username: string,
-    email: string,
     fingerprintHash: string,
   ) {
     return this.jwtService.sign(
       {
         sub: uid,
         username,
-        email,
         userFingerPrint: fingerprintHash,
       },
       {
@@ -54,12 +52,9 @@ export class AuthService {
     try {
       const fingerprintHash =
         this.encryptionService.hashFingerprint(fingerprint);
-      const { sub, username, email, userFingerPrint } = this.jwtService.verify(
-        token,
-        {
-          secret: this.configService.get<string>('JWT_SECRET'),
-        },
-      );
+      const { sub, username, userFingerPrint } = this.jwtService.verify(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
 
       if (userFingerPrint !== fingerprintHash) {
         throw new UnauthorizedException();
@@ -68,7 +63,6 @@ export class AuthService {
       return {
         uid: sub,
         username,
-        email,
         userFingerPrint,
       };
     } catch (error) {
@@ -91,14 +85,14 @@ export class AuthService {
 
   async refreshToken(refreshToken: string) {
     try {
-      const { sub, username, email } = this.jwtService.verify(refreshToken, {
+      const { sub, username } = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       });
 
       const { fingerprint, hash } = this.generateFingerprint();
 
       return {
-        accessToken: await this.createAccessToken(sub, username, email, hash),
+        accessToken: await this.createAccessToken(sub, username, hash),
         refreshToken: await this.createRefreshToken(sub, username),
         fingerprint,
       };

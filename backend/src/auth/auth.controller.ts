@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
   UsePipes,
   ValidationPipe,
@@ -15,8 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
-import { CheckTokenDto } from './dto/check-token.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
@@ -48,7 +48,6 @@ export class AuthController {
       // eslint-disable-next-line no-underscore-dangle
       user._id,
       user.username,
-      user.email,
       hash,
     );
 
@@ -59,24 +58,20 @@ export class AuthController {
     );
 
     const json = user.toJSON();
-    response.cookie('Secure-Fgp', fingerprint, {
-      domain:
-        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600 * 1000,
-      sameSite: 'strict',
-    });
+    const { title, bio, picture, links } = json.profile;
+
+    this.addCookiesToResponse(response, accessToken, refreshToken, fingerprint);
 
     return response.status(HttpStatus.CREATED).json({
       // eslint-disable-next-line no-underscore-dangle
       uid: json._id.toString(),
       username: json.username,
       email: json.email,
-      tokenManager: {
-        accessToken,
-        expirationTime: Date.now() + 3600 * 1000,
-        refreshToken,
+      profile: {
+        title,
+        bio,
+        picture,
+        links,
       },
     });
   }
@@ -91,7 +86,6 @@ export class AuthController {
     const accessToken = await this.authService.createAccessToken(
       user.uid,
       user.username,
-      user.email,
       hash,
     );
 
@@ -102,36 +96,32 @@ export class AuthController {
     );
 
     const json = user.toJSON();
+    const { title, bio, picture, links } = json.profile;
 
-    response.cookie('Secure-Fgp', fingerprint, {
-      domain:
-        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 3600 * 1000,
-      sameSite: 'strict',
-    });
+    this.addCookiesToResponse(response, accessToken, refreshToken, fingerprint);
 
     return response.status(HttpStatus.OK).json({
       // eslint-disable-next-line no-underscore-dangle
       uid: json._id.toString(),
       username: json.username,
       email: json.email,
-      tokenManager: {
-        accessToken,
-        expirationTime: Date.now() + 3600 * 1000,
-        refreshToken,
+      profile: {
+        title,
+        bio,
+        picture,
+        links,
       },
     });
   }
 
   @UsePipes(ValidationPipe)
+  @UseGuards(JwtAuthGuard)
   @Post('checkToken')
   @HttpCode(200)
-  async checkToken(@Req() request, @Body() checkTokenDto: CheckTokenDto) {
-    const fingerprint = request.cookies ? request.cookies['Secure-Fgp'] : '';
-    const { accessToken } = checkTokenDto;
-    await this.authService.verifyToken(accessToken, fingerprint);
+  async checkToken(@Req() request) {
+    if (!request.user) {
+      throw new UnauthorizedException();
+    }
 
     return {
       valid: true,
@@ -140,11 +130,43 @@ export class AuthController {
 
   @UsePipes(ValidationPipe)
   @Post('token')
-  async token(@Body() refreshTokenDto: RefreshTokenDto, @Res() response) {
-    const { refreshToken } = refreshTokenDto;
+  @HttpCode(200)
+  async token(@Req() request, @Res() response) {
+    const refreshToken = request.cookies.refresh_token;
+    if (!refreshToken) {
+      throw new UnauthorizedException();
+    }
+
     const newTokens = await this.authService.refreshToken(refreshToken);
 
-    response.cookie('Secure-Fgp', newTokens.fingerprint, {
+    this.addCookiesToResponse(
+      response,
+      newTokens.accessToken,
+      newTokens.refreshToken,
+      newTokens.fingerprint,
+    );
+
+    return response.status(HttpStatus.OK).json();
+  }
+
+  @UsePipes(ValidationPipe)
+  @Post('logout')
+  @HttpCode(200)
+  async logout(@Res() response) {
+    response.clearCookie('Secure-Fgp');
+    response.clearCookie('access_token');
+    response.clearCookie('refresh_token');
+
+    return response.status(HttpStatus.OK).json();
+  }
+
+  private addCookiesToResponse(
+    response: any,
+    accessToken: string,
+    refreshToken: string,
+    fingerprint: string,
+  ) {
+    response.cookie('Secure-Fgp', fingerprint, {
       domain:
         process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
       httpOnly: true,
@@ -152,11 +174,20 @@ export class AuthController {
       maxAge: 3600 * 1000,
       sameSite: 'strict',
     });
-
-    return response.status(HttpStatus.OK).json({
-      accessToken: newTokens.accessToken,
-      expirationTime: Date.now() + 3600 * 1000,
-      refreshToken: newTokens.refreshToken,
+    response.cookie('access_token', accessToken, {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600 * 1000,
+      sameSite: 'strict',
+    });
+    response.cookie('refresh_token', refreshToken, {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600 * 24 * 7 * 1000,
     });
   }
 }

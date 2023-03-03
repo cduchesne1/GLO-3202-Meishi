@@ -18,14 +18,18 @@ import SignUp from './pages/Signup';
 import theme from './theme/theme';
 
 function ProtectedRoute({ children }: any) {
-  const { isLoaded, user, refresh, isAuthenticated } = useAuth();
+  const { isLoaded, user, checkToken, isAuthenticated } = useAuth();
   const location = useLocation();
 
   useEffect(() => {
-    if (isLoaded && user && user.tokenManager.expirationTime < Date.now()) {
-      refresh();
-    }
-  }, [isLoaded, user, refresh]);
+    const validateAccess = async () => {
+      if (isLoaded && user) {
+        await checkToken();
+      }
+    };
+
+    validateAccess();
+  }, [isLoaded, user, checkToken]);
 
   if (!isLoaded) {
     return null;
