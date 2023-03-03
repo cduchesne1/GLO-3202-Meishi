@@ -153,9 +153,27 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   async logout(@Res() response) {
-    response.clearCookie('Secure-Fgp');
-    response.clearCookie('access_token');
-    response.clearCookie('refresh_token');
+    response.clearCookie('Secure-Fgp', {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    response.clearCookie('access_token', {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+    response.clearCookie('refresh_token', {
+      domain:
+        process.env.NODE_ENV === 'production' ? '.meishi.social' : undefined,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
 
     return response.status(HttpStatus.OK).json();
   }
