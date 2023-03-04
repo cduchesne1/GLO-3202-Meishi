@@ -26,6 +26,7 @@ import { EncryptionModule } from './encryption/encryption.module';
         uri: configService.get('MONGO_URI'),
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        sanitizeFilter: true,
       }),
     }),
     AuthModule,
