@@ -24,15 +24,14 @@ import {
 import { Field, Form, Formik } from 'formik';
 import React, { useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import httpClient from '../api/http-client';
 import { useAuth } from '../context/auth-context';
 
 export default function SignUp() {
-  const { updateUser } = useAuth();
+  const { signUp } = useAuth();
   const [previousUsername, setPreviousUsername] = useState('');
   const [signUpFailed, setSignUpFailed] = useState(false);
-  const navigate = useNavigate();
 
   const validateUsername = async (value: string) => {
     let error;
@@ -125,14 +124,12 @@ export default function SignUp() {
                 onSubmit={async (values) => {
                   setSignUpFailed(false);
                   try {
-                    const response = await httpClient.post(
-                      '/auth/signup',
-                      values
+                    const signedUp = await signUp(
+                      values.username,
+                      values.email,
+                      values.password
                     );
-                    if (response.status === 201) {
-                      updateUser(response.data);
-                      navigate('/profile', { replace: true });
-                    }
+                    setSignUpFailed(!signedUp);
                   } catch (err) {
                     setSignUpFailed(true);
                   }
