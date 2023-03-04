@@ -81,6 +81,7 @@ export default function AuthProvider({ children }: any) {
         navigate('/profile', { replace: true });
         return true;
       } catch (e) {
+        console.log(e);
         setUser(undefined);
         setIsAuthenticated(false);
         return false;
