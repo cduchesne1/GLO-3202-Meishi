@@ -14,7 +14,7 @@
     ],
     "headers": [
       {
-        "source": "**/*.@(html|htm|css|js)",
+        "source": "**/*",
         "headers": [
           {
             "key": "Content-Security-Policy",
