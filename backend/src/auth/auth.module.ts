@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { EncryptionModule } from 'src/encryption/encryption.module';
 import { UsersModule } from 'src/users/users.module';
+import { HttpModule } from '@nestjs/axios';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
@@ -20,6 +21,7 @@ import { AuthController } from './auth.controller';
         },
       }),
     }),
+    HttpModule,
     UsersModule,
     EncryptionModule,
   ],

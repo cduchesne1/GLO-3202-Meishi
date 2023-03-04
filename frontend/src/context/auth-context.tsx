@@ -14,6 +14,11 @@ interface IAuthContext {
   isAuthenticated: boolean;
   updateUser: (updatedUser: any) => void;
   login: (username: string, password: string) => Promise<boolean>;
+  signUp: (
+    username: string,
+    email: string,
+    password: string
+  ) => Promise<boolean>;
   checkToken: () => void;
   logout: () => void;
 }
@@ -23,9 +28,13 @@ const AuthContext = createContext({
   user: undefined,
   isAuthenticated: false,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  updateUser: (updatedUser: any) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   login: (username: string, password: string) => Promise.resolve(false),
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  updateUser: (updatedUser: any) => {},
+  signUp: (username: string, email: string, password: string) =>
+    // eslint-disable-next-line implicit-arrow-linebreak
+    Promise.resolve(false),
   checkToken: () => {},
   logout: () => {},
 } as IAuthContext);
@@ -56,8 +65,46 @@ export default function AuthProvider({ children }: any) {
     async (username: string, password: string) => {
       try {
         setIsLoaded(false);
+
+        const captchaToken = await window.grecaptcha.execute(
+          import.meta.env.VITE_CAPTCHA_SITE_KEY,
+          { action: 'submit' }
+        );
+        await httpClient.post('/auth/captcha', { token: captchaToken });
+
         const { data } = await httpClient.post('/auth/login', {
           username,
+          password,
+        });
+        setUser(data);
+        setIsAuthenticated(true);
+        navigate('/profile', { replace: true });
+        return true;
+      } catch (e) {
+        setUser(undefined);
+        setIsAuthenticated(false);
+        return false;
+      } finally {
+        setIsLoaded(true);
+      }
+    },
+    [navigate]
+  );
+
+  const signUp = useCallback(
+    async (username: string, email: string, password: string) => {
+      try {
+        setIsLoaded(false);
+
+        const captchaToken = await window.grecaptcha.execute(
+          import.meta.env.VITE_CAPTCHA_SITE_KEY,
+          { action: 'submit' }
+        );
+        await httpClient.post('/auth/captcha', { token: captchaToken });
+
+        const { data } = await httpClient.post('/auth/signup', {
+          username,
+          email,
           password,
         });
         setUser(data);
@@ -107,11 +154,21 @@ export default function AuthProvider({ children }: any) {
       user,
       isAuthenticated,
       login,
+      signUp,
       updateUser,
       checkToken,
       logout,
     }),
-    [isLoaded, user, isAuthenticated, login, updateUser, checkToken, logout]
+    [
+      isLoaded,
+      user,
+      isAuthenticated,
+      login,
+      signUp,
+      updateUser,
+      checkToken,
+      logout,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

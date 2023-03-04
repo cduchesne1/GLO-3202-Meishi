@@ -1,3 +1,4 @@
+import { HttpService } from '@nestjs/axios';
 import {
   BadRequestException,
   Body,
@@ -13,9 +14,11 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { lastValueFrom } from 'rxjs';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
+import { CaptchaDto } from './dto/captcha.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 
@@ -23,9 +26,34 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 export class AuthController {
   constructor(
     private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
   ) {}
+
+  @UsePipes(ValidationPipe)
+  @Post('captcha')
+  @HttpCode(200)
+  async captcha(@Body() captchaDto: CaptchaDto) {
+    const { token } = captchaDto;
+
+    const response$ = await this.httpService.post(
+      'https://www.google.com/recaptcha/api/siteverify',
+      null,
+      {
+        params: {
+          secret: this.configService.get<string>('CAPTCHA_SECRET'),
+          response: token,
+        },
+      },
+    );
+    const response = await lastValueFrom(response$);
+    const { success, score, action } = response.data;
+
+    if (!success || score < 0.5 || action !== 'submit') {
+      throw new BadRequestException('Captcha failed.');
+    }
+  }
 
   @UsePipes(ValidationPipe)
   @Post('signup')
