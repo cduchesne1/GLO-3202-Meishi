@@ -66,6 +66,7 @@ export default function AuthProvider({ children }: any) {
       try {
         setIsLoaded(false);
 
+        console.log(import.meta.env.VITE_CAPTCHA_SITE_KEY);
         const captchaToken = await window.grecaptcha.execute(
           import.meta.env.VITE_CAPTCHA_SITE_KEY,
           { action: 'submit' }
