@@ -21,7 +21,7 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { Field, Form, Formik } from 'formik';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/auth-context';
@@ -47,6 +47,18 @@ export default function Login() {
 
     return error;
   };
+
+  useEffect(() => {
+    const captchaScript = document.createElement('script');
+    captchaScript.src =
+      'https://www.google.com/recaptcha/api.js?render=6LdgOc8kAAAAAOmzc-jHlS9fuXCTB_uFOQCaIYqy';
+    captchaScript.async = true;
+    document.head.appendChild(captchaScript);
+
+    return () => {
+      document.head.removeChild(captchaScript);
+    };
+  }, []);
 
   return (
     <Box h="100vh">
